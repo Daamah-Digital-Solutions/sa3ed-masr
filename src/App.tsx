@@ -9,6 +9,7 @@ import BrowseMentors from "./pages/BrowseMentors";
 import BrowseProjects from "./pages/BrowseProjects";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Welcome from "./pages/Welcome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/mentor-register" element={<MentorRegister />} />
           <Route path="/seeker-register" element={<SeekerRegister />} />

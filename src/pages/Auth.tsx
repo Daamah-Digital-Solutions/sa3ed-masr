@@ -1,18 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const navigate = useNavigate();
   const { user, loading, signInWithGoogle } = useAuth();
   const { toast } = useToast();
+  const [checkingProfile, setCheckingProfile] = useState(false);
 
   useEffect(() => {
-    if (user && !loading) {
-      navigate('/');
-    }
+    const checkUserProfile = async () => {
+      if (user && !loading) {
+        setCheckingProfile(true);
+
+        // Check if user has mentor or seeker profile
+        const [mentorResult, seekerResult] = await Promise.all([
+          supabase.from('mentors').select('id').eq('user_id', user.id).maybeSingle(),
+          supabase.from('seekers').select('id').eq('user_id', user.id).maybeSingle(),
+        ]);
+
+        const hasMentorProfile = mentorResult.data !== null;
+        const hasSeekerProfile = seekerResult.data !== null;
+
+        setCheckingProfile(false);
+
+        // If new user (no profiles), redirect to welcome
+        if (!hasMentorProfile && !hasSeekerProfile) {
+          navigate('/welcome');
+        } else {
+          navigate('/');
+        }
+      }
+    };
+
+    checkUserProfile();
   }, [user, loading, navigate]);
 
   const handleGoogleSignIn = async () => {
@@ -26,7 +50,7 @@ export default function Auth() {
     }
   };
 
-  if (loading) {
+  if (loading || checkingProfile) {
     return (
       <Layout>
         <div className="container py-24 text-center">
